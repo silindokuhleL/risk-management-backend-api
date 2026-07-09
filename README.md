@@ -103,6 +103,25 @@ Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
 
 This allows the frontend to make role-aware decisions after login.
 
+## Visual And Verification Proof
+
+- Local verification log: [docs/LOCAL_VERIFICATION.md](docs/LOCAL_VERIFICATION.md)
+- Login form screenshot: [docs/proof-assets/risk-login-form.jpg](docs/proof-assets/risk-login-form.jpg)
+
+Verified locally on 2026-07-09:
+
+- Temporary SQLite migration and seed completed.
+- Admin and super-admin users can authenticate through direct Sanctum API requests.
+- `/api/user` returns different role and permission scopes for `admin` and `super admin`.
+- Frontend lint and production build pass.
+
+Known proof gaps:
+
+- Browser-driven form submission still needs follow-up.
+- Existing Breeze feature tests are failing under the current local runtime/configuration.
+- PHP 8.5 dependency deprecation output should be cleaned up.
+- Frontend dependency vulnerabilities need a security upgrade pass.
+
 ## Local Setup
 
 Install dependencies:
