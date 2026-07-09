@@ -15,8 +15,9 @@ Current status:
 - Roles and permissions migrations: available.
 - Seeded `admin` and `super admin` users: available.
 - Authenticated `/api/user` endpoint returns user with roles and permissions: available.
+- Browser-verified frontend login for `admin` and `super admin`: available.
+- Browser screenshots for role-aware dashboards: available.
 - Full risk CRUD/domain API: not present in this repo yet.
-- Browser/API screenshots: still to capture.
 
 Related frontend:
 
@@ -107,17 +108,21 @@ This allows the frontend to make role-aware decisions after login.
 
 - Local verification log: [docs/LOCAL_VERIFICATION.md](docs/LOCAL_VERIFICATION.md)
 - Login form screenshot: [docs/proof-assets/risk-login-form.jpg](docs/proof-assets/risk-login-form.jpg)
+- Admin dashboard screenshot: [docs/proof-assets/risk-admin-dashboard.png](docs/proof-assets/risk-admin-dashboard.png)
+- Super admin dashboard screenshot: [docs/proof-assets/risk-super-admin-dashboard.png](docs/proof-assets/risk-super-admin-dashboard.png)
 
 Verified locally on 2026-07-09:
 
 - Temporary SQLite migration and seed completed.
 - Admin and super-admin users can authenticate through direct Sanctum API requests.
 - `/api/user` returns different role and permission scopes for `admin` and `super admin`.
+- Browser verified the frontend login flow for both seeded users.
+- Browser verified that admin does not see the `Users` navigation link.
+- Browser verified that super admin sees the `Users` navigation link.
 - Frontend lint and production build pass.
 
 Known proof gaps:
 
-- Browser-driven form submission still needs follow-up.
 - Existing Breeze feature tests are failing under the current local runtime/configuration.
 - PHP 8.5 dependency deprecation output should be cleaned up.
 - Frontend dependency vulnerabilities need a security upgrade pass.
@@ -160,11 +165,11 @@ http://localhost:8000
 - [ ] `composer install` completes successfully.
 - [ ] `php artisan migrate:fresh --seed` completes successfully.
 - [ ] `php artisan test` passes.
-- [ ] Admin user can authenticate through the frontend.
-- [ ] Super admin user can authenticate through the frontend.
-- [ ] `/api/user` returns roles and permissions for admin.
-- [ ] `/api/user` returns roles and permissions for super admin.
-- [ ] Browser/API screenshots captured for both permission scopes.
+- [x] Admin user can authenticate through the frontend.
+- [x] Super admin user can authenticate through the frontend.
+- [x] `/api/user` returns roles and permissions for admin.
+- [x] `/api/user` returns roles and permissions for super admin.
+- [x] Browser/API screenshots captured for both permission scopes.
 
 ## Portfolio Notes
 
