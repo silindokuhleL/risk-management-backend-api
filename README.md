@@ -21,6 +21,8 @@ Current status:
 - Seeded risk register demo records: available.
 - Permission-protected control register CRUD API: available.
 - Seeded control register demo records linked to seeded risks: available.
+- Permission-protected action plan CRUD API: available.
+- Seeded action plan demo records linked to seeded risks and controls: available.
 
 Related frontend:
 
@@ -36,6 +38,7 @@ Related frontend:
 - Foundation for role-aware risk-management workflows.
 - Permission-protected risk register workflow with risk scoring, owners, status, and category filters.
 - Permission-protected control register workflow with linked risks, owners, effectiveness status, control type, due dates, and test dates.
+- Permission-protected action plan workflow with linked risks, optional linked controls, owners, priorities, statuses, due dates, and completed dates.
 
 ## Tech Stack
 
@@ -88,23 +91,31 @@ routes/api.php                                      # Authenticated user endpoin
 routes/auth.php                                     # Breeze/Sanctum auth routes
 app/Http/Controllers/Api/RiskController.php         # Risk register API controller
 app/Http/Controllers/Api/ControlController.php      # Control register API controller
+app/Http/Controllers/Api/ActionPlanController.php   # Action plan API controller
 app/Http/Requests/StoreRiskRequest.php              # Risk creation validation
 app/Http/Requests/UpdateRiskRequest.php             # Risk update validation
 app/Http/Requests/StoreControlRequest.php           # Control creation validation
 app/Http/Requests/UpdateControlRequest.php          # Control update validation
+app/Http/Requests/StoreActionPlanRequest.php        # Action plan creation validation
+app/Http/Requests/UpdateActionPlanRequest.php       # Action plan update validation
 app/Http/Resources/RiskResource.php                 # Risk API resource
 app/Http/Resources/ControlResource.php              # Control API resource
+app/Http/Resources/ActionPlanResource.php           # Action plan API resource
 app/Models/Risk.php                                 # Risk model and owner relationship
 app/Models/Control.php                              # Control model with risk and owner relationships
+app/Models/ActionPlan.php                           # Action plan model with risk, control, and owner relationships
 app/Models/User.php                                 # Uses Spatie HasRoles
 app/Services/RiskService.php                        # Risk register business workflow
 app/Services/ControlService.php                     # Control register business workflow
+app/Services/ActionPlanService.php                  # Action plan business workflow
 database/seeders/RolesAndPermissionsSeeder.php      # Roles and permissions
 database/seeders/UserSeeder.php                     # Seeded demo users
 database/seeders/RiskSeeder.php                     # Seeded demo risks
 database/seeders/ControlSeeder.php                  # Seeded demo controls
+database/seeders/ActionPlanSeeder.php               # Seeded demo action plans
 database/migrations/*create_risks_table.php         # Risk register table
 database/migrations/*create_controls_table.php      # Control register table
+database/migrations/*create_action_plans_table.php  # Action plans table
 database/migrations/*permission*                    # Spatie permission tables
 config/permission.php                               # Spatie Permission config
 config/sanctum.php                                  # Sanctum config
@@ -165,6 +176,26 @@ DELETE /api/controls/{control}
 
 The control API resource returns linked risk details, owner details, control type, effectiveness, status, due date, and tested date. Controllers stay thin and call `ControlService` for workflow operations.
 
+The action plan API is protected by Sanctum and the existing `view action plans` permission:
+
+```php
+Route::middleware(['auth:sanctum', 'permission:view action plans'])->group(function () {
+    Route::apiResource('action-plans', ActionPlanController::class);
+});
+```
+
+Action plan endpoints:
+
+```text
+GET    /api/action-plans
+POST   /api/action-plans
+GET    /api/action-plans/{action_plan}
+PATCH  /api/action-plans/{action_plan}
+DELETE /api/action-plans/{action_plan}
+```
+
+The action plan API resource returns linked risk details, optional linked control details, owner details, priority, status, due date, and completed date. Controllers stay thin and call `ActionPlanService` for workflow operations.
+
 ## Visual And Verification Proof
 
 - Local verification log: [docs/LOCAL_VERIFICATION.md](docs/LOCAL_VERIFICATION.md)
@@ -179,6 +210,7 @@ Verified locally on 2026-07-09:
 - `/api/user` returns different role and permission scopes for `admin` and `super admin`.
 - `RiskRegisterApiTest` verifies guest blocking, permission blocking, and admin create/list/show/update/delete risk workflow.
 - `ControlRegisterApiTest` verifies guest blocking, permission blocking, and admin create/list/show/update/delete control workflow.
+- `ActionPlanApiTest` verifies guest blocking, permission blocking, and admin create/list/show/update/delete action plan workflow.
 - Browser verified the frontend login flow for both seeded users.
 - Browser verified that admin does not see the `Users` navigation link.
 - Browser verified that super admin sees the `Users` navigation link.
@@ -237,6 +269,8 @@ http://localhost:8000
 - [x] Risk register API has focused feature-test coverage.
 - [x] Permission-protected control register API exists.
 - [x] Control register API has focused feature-test coverage.
+- [x] Permission-protected action plan API exists.
+- [x] Action plan API has focused feature-test coverage.
 - [x] Browser/API screenshots captured for both permission scopes.
 
 ## Portfolio Notes
@@ -245,7 +279,7 @@ This backend is useful proof for authentication, RBAC, and early risk-management
 
 The next strongest improvement is to add a small risk domain module, for example:
 
-- action plans
 - permission-protected user management
+- reporting/dashboard summaries
 
-That would turn the current RBAC, risk, and control foundation into a stronger full product case study.
+That would turn the current RBAC, risk, control, and action-plan foundation into a stronger full product case study.

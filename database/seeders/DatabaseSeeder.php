@@ -16,5 +16,6 @@ class DatabaseSeeder extends Seeder
         $this->call(UserSeeder::class);
         $this->call(RiskSeeder::class);
         $this->call(ControlSeeder::class);
+        $this->call(ActionPlanSeeder::class);
     }
 }
