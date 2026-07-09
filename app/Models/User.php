@@ -56,4 +56,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Control::class, 'owner_id');
     }
+
+    public function actionPlans(): HasMany
+    {
+        return $this->hasMany(ActionPlan::class, 'owner_id');
+    }
 }

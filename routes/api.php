@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\ActionPlanController;
 use App\Http\Controllers\Api\ControlController;
 use App\Http\Controllers\Api\RiskController;
 use Illuminate\Http\Request;
@@ -19,4 +20,8 @@ Route::middleware(['auth:sanctum', 'permission:view risks'])->group(function () 
 
 Route::middleware(['auth:sanctum', 'permission:view controls'])->group(function () {
     Route::apiResource('controls', ControlController::class);
+});
+
+Route::middleware(['auth:sanctum', 'permission:view action plans'])->group(function () {
+    Route::apiResource('action-plans', ActionPlanController::class);
 });

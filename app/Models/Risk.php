@@ -44,6 +44,11 @@ class Risk extends Model
         return $this->hasMany(Control::class);
     }
 
+    public function actionPlans(): HasMany
+    {
+        return $this->hasMany(ActionPlan::class);
+    }
+
     public function inherentScore(): int
     {
         return $this->inherent_likelihood * $this->inherent_impact;

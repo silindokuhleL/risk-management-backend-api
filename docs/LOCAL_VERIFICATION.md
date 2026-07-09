@@ -173,6 +173,7 @@ Screenshots:
 - The frontend can authenticate both seeded roles and render different navigation by permission scope.
 - The backend now includes a first real risk-domain workflow through a permission-protected risk register API.
 - The backend now includes a second domain workflow through a permission-protected control register API linked to seeded risks.
+- The backend now includes a third domain workflow through a permission-protected action plan API linked to seeded risks and controls.
 - The frontend is still mostly a Breeze/Next auth shell, not a complete risk-management product UI.
 - The backend currently emits PHP 8.5 deprecation output under the default local serve path. This should be cleaned up before treating the project as production-ready.
 - The frontend dependency tree needs a security upgrade pass before this project is promoted strongly.
@@ -284,3 +285,68 @@ Result:
 
 - Passed.
 - Confirmed `3 controls / 3 risks`.
+
+## Action Plan API Proof
+
+Added and verified on 2026-07-09:
+
+- `action_plans` table with risk relationship, optional control relationship, owner relationship, title, description, priority, status, due date, and completed date.
+- `ActionPlan` model with `risk`, `control`, and `owner` relationships.
+- `Risk`, `Control`, and `User` models now expose `actionPlans` relationships.
+- `ActionPlanResource` with linked risk details, optional linked control details, owner details, priority, status, due date, and completed date.
+- `ActionPlanService` for list, create, update, and delete workflow operations.
+- `ActionPlanController` stays thin and delegates domain work to the service.
+- `StoreActionPlanRequest` and `UpdateActionPlanRequest` validate the API payload and check the `view action plans` permission.
+- `/api/action-plans` resource routes are protected by `auth:sanctum` and `permission:view action plans`.
+- `ActionPlanSeeder` adds three demo action plans linked to seeded risks and controls.
+
+Focused test command:
+
+```bash
+rm -f /tmp/action-plan-api-proof.sqlite
+touch /tmp/action-plan-api-proof.sqlite
+APP_ENV=testing DB_CONNECTION=sqlite DB_DATABASE=/tmp/action-plan-api-proof.sqlite \
+  php -d display_errors=0 -d error_reporting=8191 artisan test \
+  tests/Feature/ActionPlanApiTest.php \
+  tests/Feature/ControlRegisterApiTest.php \
+  tests/Feature/RiskRegisterApiTest.php
+```
+
+Result:
+
+- Passed.
+- 9 tests.
+- 59 assertions.
+- Verified guest users cannot access `/api/action-plans`.
+- Verified authenticated users without `view action plans` are forbidden.
+- Verified admin users can create, list, show, update, and delete an action plan.
+- Verified action plan responses include linked risk, linked control, and owner data.
+
+Route check:
+
+```bash
+APP_ENV=testing DB_CONNECTION=sqlite DB_DATABASE=/tmp/action-plan-api-proof.sqlite \
+  php -d display_errors=0 -d error_reporting=8191 artisan route:list --path=api/action-plans
+```
+
+Result:
+
+- Passed.
+- Confirmed `GET`, `POST`, `GET {action_plan}`, `PATCH/PUT {action_plan}`, and `DELETE` routes.
+
+Seed proof:
+
+```bash
+rm -f /tmp/action-plan-seed-proof.sqlite
+touch /tmp/action-plan-seed-proof.sqlite
+APP_ENV=local APP_DEBUG=false DB_CONNECTION=sqlite DB_DATABASE=/tmp/action-plan-seed-proof.sqlite \
+  php -d display_errors=0 -d error_reporting=8191 artisan migrate:fresh --seed
+APP_ENV=local APP_DEBUG=false DB_CONNECTION=sqlite DB_DATABASE=/tmp/action-plan-seed-proof.sqlite \
+  php -d display_errors=0 -d error_reporting=8191 artisan tinker \
+  --execute="echo App\\Models\\ActionPlan::count().' action plans / '.App\\Models\\Control::count().' controls / '.App\\Models\\Risk::count().' risks';"
+```
+
+Result:
+
+- Passed.
+- Confirmed `3 action plans / 3 controls / 3 risks`.

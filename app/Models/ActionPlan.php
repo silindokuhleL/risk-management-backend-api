@@ -5,27 +5,26 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Control extends Model
+class ActionPlan extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'risk_id',
+        'control_id',
         'owner_id',
         'title',
         'description',
-        'type',
-        'effectiveness',
+        'priority',
         'status',
         'due_at',
-        'tested_at',
+        'completed_at',
     ];
 
     protected $casts = [
         'due_at' => 'date',
-        'tested_at' => 'date',
+        'completed_at' => 'date',
     ];
 
     public function risk(): BelongsTo
@@ -33,13 +32,13 @@ class Control extends Model
         return $this->belongsTo(Risk::class);
     }
 
+    public function control(): BelongsTo
+    {
+        return $this->belongsTo(Control::class);
+    }
+
     public function owner(): BelongsTo
     {
         return $this->belongsTo(User::class, 'owner_id');
-    }
-
-    public function actionPlans(): HasMany
-    {
-        return $this->hasMany(ActionPlan::class);
     }
 }
