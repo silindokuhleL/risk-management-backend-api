@@ -17,7 +17,8 @@ Current status:
 - Authenticated `/api/user` endpoint returns user with roles and permissions: available.
 - Browser-verified frontend login for `admin` and `super admin`: available.
 - Browser screenshots for role-aware dashboards: available.
-- Full risk CRUD/domain API: not present in this repo yet.
+- Permission-protected risk register CRUD API: available.
+- Seeded risk register demo records: available.
 
 Related frontend:
 
@@ -31,6 +32,7 @@ Related frontend:
 - Seeded permission scopes for admin and super admin users.
 - Authenticated API response that exposes roles and nested permissions to the frontend.
 - Foundation for role-aware risk-management workflows.
+- Permission-protected risk register workflow with risk scoring, owners, status, and category filters.
 
 ## Tech Stack
 
@@ -81,9 +83,17 @@ Role: super admin
 ```text
 routes/api.php                                      # Authenticated user endpoint
 routes/auth.php                                     # Breeze/Sanctum auth routes
+app/Http/Controllers/Api/RiskController.php         # Risk register API controller
+app/Http/Requests/StoreRiskRequest.php              # Risk creation validation
+app/Http/Requests/UpdateRiskRequest.php             # Risk update validation
+app/Http/Resources/RiskResource.php                 # Risk API resource
+app/Models/Risk.php                                 # Risk model and owner relationship
 app/Models/User.php                                 # Uses Spatie HasRoles
+app/Services/RiskService.php                        # Risk register business workflow
 database/seeders/RolesAndPermissionsSeeder.php      # Roles and permissions
 database/seeders/UserSeeder.php                     # Seeded demo users
+database/seeders/RiskSeeder.php                     # Seeded demo risks
+database/migrations/*create_risks_table.php         # Risk register table
 database/migrations/*permission*                    # Spatie permission tables
 config/permission.php                               # Spatie Permission config
 config/sanctum.php                                  # Sanctum config
@@ -104,6 +114,26 @@ Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
 
 This allows the frontend to make role-aware decisions after login.
 
+The risk register API is protected by Sanctum and the existing `view risks` permission:
+
+```php
+Route::middleware(['auth:sanctum', 'permission:view risks'])->group(function () {
+    Route::apiResource('risks', RiskController::class);
+});
+```
+
+Risk endpoints:
+
+```text
+GET    /api/risks
+POST   /api/risks
+GET    /api/risks/{risk}
+PATCH  /api/risks/{risk}
+DELETE /api/risks/{risk}
+```
+
+The API resource returns owner details, inherent score, residual score, status, category, and review dates. Controllers stay thin and call `RiskService` for workflow operations.
+
 ## Visual And Verification Proof
 
 - Local verification log: [docs/LOCAL_VERIFICATION.md](docs/LOCAL_VERIFICATION.md)
@@ -116,6 +146,7 @@ Verified locally on 2026-07-09:
 - Temporary SQLite migration and seed completed.
 - Admin and super-admin users can authenticate through direct Sanctum API requests.
 - `/api/user` returns different role and permission scopes for `admin` and `super admin`.
+- `RiskRegisterApiTest` verifies guest blocking, permission blocking, and admin create/list/show/update/delete risk workflow.
 - Browser verified the frontend login flow for both seeded users.
 - Browser verified that admin does not see the `Users` navigation link.
 - Browser verified that super admin sees the `Users` navigation link.
@@ -164,21 +195,22 @@ http://localhost:8000
 
 - [ ] `composer install` completes successfully.
 - [ ] `php artisan migrate:fresh --seed` completes successfully.
-- [ ] `php artisan test` passes.
+- [ ] Full `php artisan test` passes.
+- [x] `php artisan test tests/Feature/RiskRegisterApiTest.php` passes.
 - [x] Admin user can authenticate through the frontend.
 - [x] Super admin user can authenticate through the frontend.
 - [x] `/api/user` returns roles and permissions for admin.
 - [x] `/api/user` returns roles and permissions for super admin.
+- [x] Permission-protected risk register API exists.
+- [x] Risk register API has focused feature-test coverage.
 - [x] Browser/API screenshots captured for both permission scopes.
 
 ## Portfolio Notes
 
-This backend is useful proof for authentication and RBAC, but it should be presented honestly as an RBAC/auth foundation rather than a complete risk-management domain system.
+This backend is useful proof for authentication, RBAC, and a first real risk-management domain workflow. It should still be presented as an early risk register API rather than a complete GRC platform.
 
 The next strongest improvement is to add a small risk domain module, for example:
 
-- risk register
-- risk categories
 - controls
 - action plans
 - permission-protected user management
