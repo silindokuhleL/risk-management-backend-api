@@ -174,6 +174,7 @@ Screenshots:
 - The backend now includes a first real risk-domain workflow through a permission-protected risk register API.
 - The backend now includes a second domain workflow through a permission-protected control register API linked to seeded risks.
 - The backend now includes a third domain workflow through a permission-protected action plan API linked to seeded risks and controls.
+- The backend now includes a permission-protected dashboard summary API for risk, control, and action-plan counts.
 - The frontend is still mostly a Breeze/Next auth shell, not a complete risk-management product UI.
 - The backend currently emits PHP 8.5 deprecation output under the default local serve path. This should be cleaned up before treating the project as production-ready.
 - The frontend dependency tree needs a security upgrade pass before this project is promoted strongly.
@@ -350,3 +351,65 @@ Result:
 
 - Passed.
 - Confirmed `3 action plans / 3 controls / 3 risks`.
+
+## Dashboard Summary API Proof
+
+Added and verified on 2026-07-09:
+
+- `DashboardSummaryService` returns grouped counts for risks, controls, and action plans.
+- `DashboardSummaryResource` returns the summary through a consistent API resource shape.
+- `DashboardSummaryController` stays thin and delegates summary work to the service.
+- `/api/dashboard/summary` is protected by `auth:sanctum` and `permission:view dashboard`.
+- The summary covers total/open/mitigating/monitoring/high inherent risks, total/active/remediation/effective/untested controls, and total/open/in-progress/blocked/critical action plans.
+
+Focused test command:
+
+```bash
+rm -f /tmp/dashboard-summary-api-proof.sqlite
+touch /tmp/dashboard-summary-api-proof.sqlite
+APP_ENV=testing DB_CONNECTION=sqlite DB_DATABASE=/tmp/dashboard-summary-api-proof.sqlite \
+  php -d display_errors=0 -d error_reporting=8191 artisan test \
+  tests/Feature/DashboardSummaryApiTest.php \
+  tests/Feature/ActionPlanApiTest.php \
+  tests/Feature/ControlRegisterApiTest.php \
+  tests/Feature/RiskRegisterApiTest.php
+```
+
+Result:
+
+- Passed.
+- 12 tests.
+- 77 assertions.
+- Verified guest users cannot access `/api/dashboard/summary`.
+- Verified authenticated users without `view dashboard` are forbidden.
+- Verified seeded summary counts for risks, controls, and action plans.
+
+Route check:
+
+```bash
+APP_ENV=testing DB_CONNECTION=sqlite DB_DATABASE=/tmp/dashboard-summary-api-proof.sqlite \
+  php -d display_errors=0 -d error_reporting=8191 artisan route:list --path=api/dashboard/summary
+```
+
+Result:
+
+- Passed.
+- Confirmed `GET /api/dashboard/summary`.
+
+Seed proof:
+
+```bash
+rm -f /tmp/dashboard-summary-seed-proof.sqlite
+touch /tmp/dashboard-summary-seed-proof.sqlite
+APP_ENV=local APP_DEBUG=false DB_CONNECTION=sqlite DB_DATABASE=/tmp/dashboard-summary-seed-proof.sqlite \
+  php -d display_errors=0 -d error_reporting=8191 artisan migrate:fresh --seed
+APP_ENV=local APP_DEBUG=false DB_CONNECTION=sqlite DB_DATABASE=/tmp/dashboard-summary-seed-proof.sqlite \
+  php -d display_errors=0 -d error_reporting=8191 artisan tinker \
+  --execute='$service = app(App\Services\DashboardSummaryService::class); echo json_encode($service->summary());'
+```
+
+Result:
+
+```json
+{"risks":{"total":3,"open":1,"mitigating":1,"monitoring":1,"high_inherent":1},"controls":{"total":3,"active":1,"remediation_required":1,"effective":1,"untested":1},"action_plans":{"total":3,"open":1,"in_progress":1,"blocked":1,"critical":1}}
+```
