@@ -2,7 +2,7 @@
 
 Laravel API backend for a Risk Management / RBAC proof project. The API uses Laravel Sanctum for SPA authentication and Spatie Permission for role and permission modeling.
 
-> Repository name note: the public repo is currently named `rick-management-backend-api`. The project itself is the Risk Management Backend API.
+Public repository: [risk-management-backend-api](https://github.com/silindokuhleL/risk-management-backend-api)
 
 ## Portfolio Proof Status
 
