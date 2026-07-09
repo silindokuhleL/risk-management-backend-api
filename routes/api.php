@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\ActionPlanController;
 use App\Http\Controllers\Api\ControlController;
+use App\Http\Controllers\Api\DashboardSummaryController;
 use App\Http\Controllers\Api\RiskController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,6 +14,9 @@ Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
 
     return $user;
 });
+
+Route::middleware(['auth:sanctum', 'permission:view dashboard'])
+    ->get('/dashboard/summary', DashboardSummaryController::class);
 
 Route::middleware(['auth:sanctum', 'permission:view risks'])->group(function () {
     Route::apiResource('risks', RiskController::class);
