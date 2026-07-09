@@ -1,66 +1,162 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Risk Management Backend API
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Laravel API backend for a Risk Management / RBAC proof project. The API uses Laravel Sanctum for SPA authentication and Spatie Permission for role and permission modeling.
 
-## About Laravel
+> Repository name note: the public repo is currently named `rick-management-backend-api`. The project itself is the Risk Management Backend API.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Portfolio Proof Status
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+Current status:
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- Public backend repository: available.
+- Laravel API backend: available.
+- Laravel Sanctum auth scaffolding: available.
+- Spatie Permission installed and configured: available.
+- Roles and permissions migrations: available.
+- Seeded `admin` and `super admin` users: available.
+- Authenticated `/api/user` endpoint returns user with roles and permissions: available.
+- Full risk CRUD/domain API: not present in this repo yet.
+- Browser/API screenshots: still to capture.
 
-## Learning Laravel
+Related frontend:
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- [risk-management-front-end-next](https://github.com/silindokuhleL/risk-management-front-end-next)
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## What This Project Proves
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- Laravel API setup for a decoupled frontend.
+- Sanctum-based first-party SPA authentication.
+- Role and permission modeling with Spatie Permission.
+- Seeded permission scopes for admin and super admin users.
+- Authenticated API response that exposes roles and nested permissions to the frontend.
+- Foundation for role-aware risk-management workflows.
 
-## Laravel Sponsors
+## Tech Stack
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+- Laravel 11
+- PHP 8.2+
+- Laravel Sanctum
+- Spatie Laravel Permission
+- SQLite/MySQL-compatible Laravel migrations
+- PHPUnit
 
-### Premium Partners
+## RBAC Model
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+Seeded roles:
 
-## Contributing
+- `admin`
+- `super admin`
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Seeded permissions:
 
-## Code of Conduct
+- `view dashboard`
+- `view risks`
+- `view controls`
+- `view action plans`
+- `view settings`
+- `manage users`
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Role permission split:
 
-## Security Vulnerabilities
+- `admin` can view dashboard, risks, controls, action plans, and settings.
+- `super admin` can do everything the admin can do, plus manage users.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## Seeded Demo Users
 
-## License
+```text
+Admin
+Email: Luyanda@gmail.com
+Password: password
+Role: admin
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Super Admin
+Email: Sinokuhle@gmail.com
+Password: password
+Role: super admin
+```
+
+## Key Files
+
+```text
+routes/api.php                                      # Authenticated user endpoint
+routes/auth.php                                     # Breeze/Sanctum auth routes
+app/Models/User.php                                 # Uses Spatie HasRoles
+database/seeders/RolesAndPermissionsSeeder.php      # Roles and permissions
+database/seeders/UserSeeder.php                     # Seeded demo users
+database/migrations/*permission*                    # Spatie permission tables
+config/permission.php                               # Spatie Permission config
+config/sanctum.php                                  # Sanctum config
+```
+
+## API Proof
+
+The authenticated user endpoint loads roles and permissions:
+
+```php
+Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
+    $user = Auth::user();
+    $user->load('roles.permissions');
+
+    return $user;
+});
+```
+
+This allows the frontend to make role-aware decisions after login.
+
+## Local Setup
+
+Install dependencies:
+
+```bash
+composer install
+```
+
+Create environment file:
+
+```bash
+cp .env.example .env
+php artisan key:generate
+```
+
+Run migrations and seeders:
+
+```bash
+php artisan migrate --seed
+```
+
+Start the API:
+
+```bash
+php artisan serve
+```
+
+Default API URL:
+
+```text
+http://localhost:8000
+```
+
+## Verification Checklist
+
+- [ ] `composer install` completes successfully.
+- [ ] `php artisan migrate:fresh --seed` completes successfully.
+- [ ] `php artisan test` passes.
+- [ ] Admin user can authenticate through the frontend.
+- [ ] Super admin user can authenticate through the frontend.
+- [ ] `/api/user` returns roles and permissions for admin.
+- [ ] `/api/user` returns roles and permissions for super admin.
+- [ ] Browser/API screenshots captured for both permission scopes.
+
+## Portfolio Notes
+
+This backend is useful proof for authentication and RBAC, but it should be presented honestly as an RBAC/auth foundation rather than a complete risk-management domain system.
+
+The next strongest improvement is to add a small risk domain module, for example:
+
+- risk register
+- risk categories
+- controls
+- action plans
+- permission-protected user management
+
+That would turn the current RBAC foundation into a stronger full product case study.
