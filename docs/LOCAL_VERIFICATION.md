@@ -171,6 +171,51 @@ Screenshots:
 - The backend RBAC foundation is real and verified through the API.
 - Admin and super admin users have different permission scopes.
 - The frontend can authenticate both seeded roles and render different navigation by permission scope.
+- The backend now includes a first real risk-domain workflow through a permission-protected risk register API.
 - The frontend is still mostly a Breeze/Next auth shell, not a complete risk-management product UI.
 - The backend currently emits PHP 8.5 deprecation output under the default local serve path. This should be cleaned up before treating the project as production-ready.
 - The frontend dependency tree needs a security upgrade pass before this project is promoted strongly.
+
+## Risk Register API Proof
+
+Added and verified on 2026-07-09:
+
+- `risks` table with owner relationship, title, description, category, likelihood, impact, residual scoring fields, status, identified date, and reviewed date.
+- `Risk` model with `owner` relationship and score helpers.
+- `RiskResource` with owner details, inherent score, residual score, status, category, and dates.
+- `RiskService` for list, create, update, and delete workflow operations.
+- `RiskController` stays thin and delegates domain work to the service.
+- `StoreRiskRequest` and `UpdateRiskRequest` validate the API payload and check the `view risks` permission.
+- `/api/risks` resource routes are protected by `auth:sanctum` and `permission:view risks`.
+- `RiskSeeder` adds three demo risks for the seeded admin/super-admin users.
+
+Focused test command:
+
+```bash
+rm -f /tmp/risk-register-api-proof.sqlite
+touch /tmp/risk-register-api-proof.sqlite
+APP_ENV=testing DB_CONNECTION=sqlite DB_DATABASE=/tmp/risk-register-api-proof.sqlite \
+  php artisan test tests/Feature/RiskRegisterApiTest.php
+```
+
+Result:
+
+- Passed.
+- 3 tests.
+- 19 assertions.
+- Verified guest users cannot access `/api/risks`.
+- Verified authenticated users without `view risks` are forbidden.
+- Verified admin users can create, list, show, update, and delete a risk.
+- Verified calculated `inherent_score` and `residual_score` in API output.
+
+Formatting command:
+
+```bash
+vendor/bin/pint --dirty
+```
+
+Result:
+
+- Passed.
+- Fixed style in changed PHP files.
+- PHP 8.5 deprecation warnings still appear from older dependency versions.
