@@ -51,4 +51,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Risk::class, 'owner_id');
     }
+
+    public function controls(): HasMany
+    {
+        return $this->hasMany(Control::class, 'owner_id');
+    }
 }

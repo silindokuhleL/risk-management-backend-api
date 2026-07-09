@@ -19,6 +19,8 @@ Current status:
 - Browser screenshots for role-aware dashboards: available.
 - Permission-protected risk register CRUD API: available.
 - Seeded risk register demo records: available.
+- Permission-protected control register CRUD API: available.
+- Seeded control register demo records linked to seeded risks: available.
 
 Related frontend:
 
@@ -33,6 +35,7 @@ Related frontend:
 - Authenticated API response that exposes roles and nested permissions to the frontend.
 - Foundation for role-aware risk-management workflows.
 - Permission-protected risk register workflow with risk scoring, owners, status, and category filters.
+- Permission-protected control register workflow with linked risks, owners, effectiveness status, control type, due dates, and test dates.
 
 ## Tech Stack
 
@@ -84,16 +87,24 @@ Role: super admin
 routes/api.php                                      # Authenticated user endpoint
 routes/auth.php                                     # Breeze/Sanctum auth routes
 app/Http/Controllers/Api/RiskController.php         # Risk register API controller
+app/Http/Controllers/Api/ControlController.php      # Control register API controller
 app/Http/Requests/StoreRiskRequest.php              # Risk creation validation
 app/Http/Requests/UpdateRiskRequest.php             # Risk update validation
+app/Http/Requests/StoreControlRequest.php           # Control creation validation
+app/Http/Requests/UpdateControlRequest.php          # Control update validation
 app/Http/Resources/RiskResource.php                 # Risk API resource
+app/Http/Resources/ControlResource.php              # Control API resource
 app/Models/Risk.php                                 # Risk model and owner relationship
+app/Models/Control.php                              # Control model with risk and owner relationships
 app/Models/User.php                                 # Uses Spatie HasRoles
 app/Services/RiskService.php                        # Risk register business workflow
+app/Services/ControlService.php                     # Control register business workflow
 database/seeders/RolesAndPermissionsSeeder.php      # Roles and permissions
 database/seeders/UserSeeder.php                     # Seeded demo users
 database/seeders/RiskSeeder.php                     # Seeded demo risks
+database/seeders/ControlSeeder.php                  # Seeded demo controls
 database/migrations/*create_risks_table.php         # Risk register table
+database/migrations/*create_controls_table.php      # Control register table
 database/migrations/*permission*                    # Spatie permission tables
 config/permission.php                               # Spatie Permission config
 config/sanctum.php                                  # Sanctum config
@@ -134,6 +145,26 @@ DELETE /api/risks/{risk}
 
 The API resource returns owner details, inherent score, residual score, status, category, and review dates. Controllers stay thin and call `RiskService` for workflow operations.
 
+The control register API is protected by Sanctum and the existing `view controls` permission:
+
+```php
+Route::middleware(['auth:sanctum', 'permission:view controls'])->group(function () {
+    Route::apiResource('controls', ControlController::class);
+});
+```
+
+Control endpoints:
+
+```text
+GET    /api/controls
+POST   /api/controls
+GET    /api/controls/{control}
+PATCH  /api/controls/{control}
+DELETE /api/controls/{control}
+```
+
+The control API resource returns linked risk details, owner details, control type, effectiveness, status, due date, and tested date. Controllers stay thin and call `ControlService` for workflow operations.
+
 ## Visual And Verification Proof
 
 - Local verification log: [docs/LOCAL_VERIFICATION.md](docs/LOCAL_VERIFICATION.md)
@@ -147,6 +178,7 @@ Verified locally on 2026-07-09:
 - Admin and super-admin users can authenticate through direct Sanctum API requests.
 - `/api/user` returns different role and permission scopes for `admin` and `super admin`.
 - `RiskRegisterApiTest` verifies guest blocking, permission blocking, and admin create/list/show/update/delete risk workflow.
+- `ControlRegisterApiTest` verifies guest blocking, permission blocking, and admin create/list/show/update/delete control workflow.
 - Browser verified the frontend login flow for both seeded users.
 - Browser verified that admin does not see the `Users` navigation link.
 - Browser verified that super admin sees the `Users` navigation link.
@@ -203,16 +235,17 @@ http://localhost:8000
 - [x] `/api/user` returns roles and permissions for super admin.
 - [x] Permission-protected risk register API exists.
 - [x] Risk register API has focused feature-test coverage.
+- [x] Permission-protected control register API exists.
+- [x] Control register API has focused feature-test coverage.
 - [x] Browser/API screenshots captured for both permission scopes.
 
 ## Portfolio Notes
 
-This backend is useful proof for authentication, RBAC, and a first real risk-management domain workflow. It should still be presented as an early risk register API rather than a complete GRC platform.
+This backend is useful proof for authentication, RBAC, and early risk-management domain workflows. It should still be presented as an early GRC API rather than a complete GRC platform.
 
 The next strongest improvement is to add a small risk domain module, for example:
 
-- controls
 - action plans
 - permission-protected user management
 
-That would turn the current RBAC foundation into a stronger full product case study.
+That would turn the current RBAC, risk, and control foundation into a stronger full product case study.
