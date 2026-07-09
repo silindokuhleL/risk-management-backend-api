@@ -172,6 +172,7 @@ Screenshots:
 - Admin and super admin users have different permission scopes.
 - The frontend can authenticate both seeded roles and render different navigation by permission scope.
 - The backend now includes a first real risk-domain workflow through a permission-protected risk register API.
+- The backend now includes a second domain workflow through a permission-protected control register API linked to seeded risks.
 - The frontend is still mostly a Breeze/Next auth shell, not a complete risk-management product UI.
 - The backend currently emits PHP 8.5 deprecation output under the default local serve path. This should be cleaned up before treating the project as production-ready.
 - The frontend dependency tree needs a security upgrade pass before this project is promoted strongly.
@@ -219,3 +220,67 @@ Result:
 - Passed.
 - Fixed style in changed PHP files.
 - PHP 8.5 deprecation warnings still appear from older dependency versions.
+
+## Control Register API Proof
+
+Added and verified on 2026-07-09:
+
+- `controls` table with risk relationship, owner relationship, title, description, control type, effectiveness, status, due date, and tested date.
+- `Control` model with `risk` and `owner` relationships.
+- `Risk` model now exposes a `controls` relationship.
+- `User` model now exposes a `controls` relationship.
+- `ControlResource` with linked risk details, owner details, type, effectiveness, status, due date, and tested date.
+- `ControlService` for list, create, update, and delete workflow operations.
+- `ControlController` stays thin and delegates domain work to the service.
+- `StoreControlRequest` and `UpdateControlRequest` validate the API payload and check the `view controls` permission.
+- `/api/controls` resource routes are protected by `auth:sanctum` and `permission:view controls`.
+- `ControlSeeder` adds three demo controls linked to the seeded demo risks.
+
+Focused test command:
+
+```bash
+rm -f /tmp/control-register-api-proof.sqlite
+touch /tmp/control-register-api-proof.sqlite
+APP_ENV=testing DB_CONNECTION=sqlite DB_DATABASE=/tmp/control-register-api-proof.sqlite \
+  php -d display_errors=0 -d error_reporting=8191 artisan test \
+  tests/Feature/ControlRegisterApiTest.php tests/Feature/RiskRegisterApiTest.php
+```
+
+Result:
+
+- Passed.
+- 6 tests.
+- 38 assertions.
+- Verified guest users cannot access `/api/controls`.
+- Verified authenticated users without `view controls` are forbidden.
+- Verified admin users can create, list, show, update, and delete a control.
+- Verified control responses include linked risk and owner data.
+
+Route check:
+
+```bash
+APP_ENV=testing DB_CONNECTION=sqlite DB_DATABASE=/tmp/control-register-api-proof.sqlite \
+  php -d display_errors=0 -d error_reporting=8191 artisan route:list --path=api/controls
+```
+
+Result:
+
+- Passed.
+- Confirmed `GET`, `POST`, `GET {control}`, `PATCH/PUT {control}`, and `DELETE` routes.
+
+Seed proof:
+
+```bash
+rm -f /tmp/control-register-seed-proof.sqlite
+touch /tmp/control-register-seed-proof.sqlite
+APP_ENV=local APP_DEBUG=false DB_CONNECTION=sqlite DB_DATABASE=/tmp/control-register-seed-proof.sqlite \
+  php -d display_errors=0 -d error_reporting=8191 artisan migrate:fresh --seed
+APP_ENV=local APP_DEBUG=false DB_CONNECTION=sqlite DB_DATABASE=/tmp/control-register-seed-proof.sqlite \
+  php -d display_errors=0 -d error_reporting=8191 artisan tinker \
+  --execute="echo App\\Models\\Control::count().' controls / '.App\\Models\\Risk::count().' risks';"
+```
+
+Result:
+
+- Passed.
+- Confirmed `3 controls / 3 risks`.

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\ControlController;
 use App\Http\Controllers\Api\RiskController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -14,4 +15,8 @@ Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
 
 Route::middleware(['auth:sanctum', 'permission:view risks'])->group(function () {
     Route::apiResource('risks', RiskController::class);
+});
+
+Route::middleware(['auth:sanctum', 'permission:view controls'])->group(function () {
+    Route::apiResource('controls', ControlController::class);
 });
