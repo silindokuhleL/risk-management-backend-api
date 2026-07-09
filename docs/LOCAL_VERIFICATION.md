@@ -65,24 +65,24 @@ Result:
 
 ## Auth And RBAC Proof
 
-Backend server was started with:
+Backend server was started with clean PHP response output:
 
 ```bash
 APP_ENV=local \
-APP_DEBUG=true \
+APP_DEBUG=false \
 APP_URL=http://localhost:8000 \
 FRONTEND_URL=http://localhost:3000 \
 SANCTUM_STATEFUL_DOMAINS=localhost:3000 \
 SESSION_DOMAIN=localhost \
 DB_CONNECTION=sqlite \
 DB_DATABASE=/tmp/risk-management-proof.sqlite \
-php artisan serve --host=127.0.0.1 --port=8000
+php -d display_errors=0 -d error_reporting=8191 -S 127.0.0.1:8000 -t public
 ```
 
 Frontend server:
 
 ```bash
-npm run dev
+NEXT_PUBLIC_BACKEND_URL=http://localhost:8000 npm run dev
 ```
 
 ### Admin User
@@ -145,21 +145,32 @@ Verified:
 - Password field is visible.
 - Remember me checkbox is visible.
 - Login button is visible.
+- Admin login succeeds in the frontend.
+- Admin is redirected to `/dashboard`.
+- Admin dashboard shows `Luyanda` with role `admin`.
+- Admin sidebar does not show the `Users` link.
+- Super admin login succeeds in the frontend.
+- Super admin is redirected to `/dashboard`.
+- Super admin dashboard shows `Sinokuhle` with role `super admin`.
+- Super admin sidebar shows the `Users` link from the `manage users` permission.
 
-Screenshot:
+Screenshots:
 
 ![Risk Management login form](proof-assets/risk-login-form.jpg)
+![Risk Management admin dashboard](proof-assets/risk-admin-dashboard.png)
+![Risk Management super admin dashboard](proof-assets/risk-super-admin-dashboard.png)
 
-Current Browser limitation:
+### Browser Auth Notes
 
-- Browser-driven form submission did not complete even though direct Sanctum API login works.
-- No current Browser console error was captured for the Next.js login page during the failed submit attempt.
-- Treat the frontend login UI as visible, but the Browser-driven login journey still needs follow-up before this can be shown as a complete end-to-end UI proof.
+- The first Browser login attempt failed while the backend was served through `php artisan serve` on PHP 8.5 because dependency deprecation output polluted local responses.
+- The proof run succeeded after serving Laravel with PHP deprecation display disabled and after starting Next.js with `NEXT_PUBLIC_BACKEND_URL=http://localhost:8000`.
+- This confirms the frontend auth flow, role labels, and role-aware sidebar rendering.
 
 ## Important Findings
 
 - The backend RBAC foundation is real and verified through the API.
 - Admin and super admin users have different permission scopes.
+- The frontend can authenticate both seeded roles and render different navigation by permission scope.
 - The frontend is still mostly a Breeze/Next auth shell, not a complete risk-management product UI.
-- The backend currently emits PHP 8.5 deprecation output that contaminates JSON responses in local debug mode. This should be cleaned up before treating the project as production-ready.
+- The backend currently emits PHP 8.5 deprecation output under the default local serve path. This should be cleaned up before treating the project as production-ready.
 - The frontend dependency tree needs a security upgrade pass before this project is promoted strongly.
